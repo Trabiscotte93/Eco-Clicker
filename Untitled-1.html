@@ -1,0 +1,831 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Eco Clicker</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .container {
+            display: flex;
+            align-items: flex-start;
+        }
+        .game-area {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        #click-button {
+            padding: 10px;
+            font-size: 20px;
+            cursor: pointer;
+            margin-top: 10px;
+            background-color: #f0f0f0;
+            border: 2px solid #333;
+            border-radius: 8px;
+            transition: transform 0.3s ease-in-out; /* Transition pour l'agrandissement/rétrécissement */
+        }
+
+        /* Effet d'agrandissement lors du clic */
+        .clicked {
+            transform: scale(1.05); /* Agrandissement à 120% */
+        }
+        #click-button img {
+            width: 500px;
+            height: 500px;
+        }
+        #score {
+            font-size: 24px;
+            margin-top: 20px;
+        }
+        .building-button {
+            padding: 10px 20px;
+            font-size: 18px;
+            cursor: pointer;
+            margin-top: 10px;
+            background-color: #f0f0f0;
+            border: 2px solid #333;
+            border-radius: 8px;
+        }
+        .building-button img {
+            width: 100px;
+            height: 100px;
+        }
+        #building-info {
+            font-size: 20px;
+            margin-top: 10px;
+        }
+        .building-area {
+            margin-left: 50px;
+            text-align: left;
+        }
+        .grid-container {
+
+            display: grid;
+            grid-template-columns: repeat(1, 1fr); /* 2 colonnes */
+            gap: 15px;
+        }
+        .navbar {
+            position: fixed; /* Fixe la barre de navigation en haut */
+            top: 0; /* Positionne la barre au sommet */
+            width: 100%; /* La barre occupe toute la largeur de la page */
+            background-color: #333;
+            padding: 10px 0;
+            display: flex;
+            justify-content: center;
+            z-index: 10; /* Place la barre au-dessus du contenu */
+        }
+        .nav-button {
+            color: white;
+            padding: 10px 20px;
+            cursor: pointer;
+            border: none;
+            background-color: #333;
+            font-size: 18px;
+            margin: 0 10px;
+        }
+        .nav-button:hover {
+            background-color: #555;
+        }
+        .section {
+            display: none; /* Par défaut, toutes les sections sont cachées */
+            padding: 20px;
+            text-align: center;
+        }
+        .active {
+            display: block; /* Afficher la section active */
+        }
+        #weather-info {
+            margin-left: 50px;  /* Décale la météo de 50px vers la droite */
+        }
+        
+        #snake-canvas {
+            background-color: #000; /* Définit une couleur de fond si nécessaire */
+            border: 1px solid #333;
+            position: relative;
+            z-index: 1;
+        }
+        /* Espacer les labels, inputs, et autres éléments de formulaire */
+/* Espacement des éléments dans la page */
+#roulette-page label,
+#roulette-page input,
+#roulette-page p,
+#roulette-page canvas {
+    margin-bottom: 15px;  /* Espacement uniforme pour tous les éléments */
+}
+
+#roulette-page label {
+    display: block;  /* Assure que les labels prennent toute la largeur et se placent sur une nouvelle ligne */
+}
+
+#roulette-page input {
+    padding: 8px;
+    width: 200px;  /* Ajuster la largeur des inputs */
+}
+
+#roulette-page button {
+    padding: 10px 15px;
+    cursor: pointer;
+    margin-bottom: 20px;  /* Ajouter un écart au-dessus des boutons */
+    margin-top: 20px;     /* Espacement en haut pour uniformité */
+}
+
+/* Conteneur principal de la page */
+#roulette-page {
+    padding: 20px;
+    text-align: center;  /* Centrer le contenu */
+}
+
+/* Grille principale contenant les images et le jeu */
+.roulette-container {
+    display: grid;
+    grid-template-columns: 1fr 3fr 1fr; /* 1 image à gauche, 1 colonne centrale, 1 image à droite */
+    gap: 20px;  /* Espace entre les éléments */
+}
+
+/* Style pour les images */
+.roulette-image {
+    width: 250px;  /* Taille des images */
+    height: auto;
+    display: flex;
+}
+
+.left img,
+.right img {
+    width: 100%;  /* L'image prendra toute la largeur de la case, mais elle peut être ajustée si besoin */
+    height: auto;
+}
+
+/* Colonne centrale contenant le jeu de roulette */
+.roulette-column {
+    display: flex;
+    flex-direction: column;
+    justify-content: center; /* Centrer verticalement */
+    align-items: center;  /* Centrer horizontalement */
+}
+
+/* Style pour le canevas */
+#roulette-game {
+    width: 50px;
+    height: 50px;
+    border: 1px solid #333;
+}
+
+/* Espacement autour des boutons et autres éléments */
+#roulette-page button {
+    margin-top: 20px;
+}
+
+
+
+    </style>
+</head>
+<body>
+    <div class="navbar">
+        <button class="nav-button" onclick="showSection('page1')">Clicker</button>
+        <button class="nav-button" onclick="showSection('page2')">Multijoueur</button>
+    </div>
+    <div id="page1" class="section active">
+        <div class="container">
+        <div class="game-area">
+            <h1>Eco Clicker</h1>
+            <button id="click-button">
+                <img src="image terre.png" alt="Clique-moi">
+            </button>
+            <div id="score">Score : 0</div>
+            <div id="points-per-second">Points par seconde : 0</div>
+            <div id="building-info">Dépollueur : Panneau solaire : 0 | Eolienne : 0 | Barrage : 0</div>
+        </div>
+        
+        <div class="building-area" id="building-area">
+            <h2>Acheter des dépollueurs</h2>
+            <div class="grid-container">
+                <button class="building-button" id="buy-solaire"><img src="panneau solaire.png"><br>Panneau solaire (30 points)</button>
+                <button class="building-button" id="snake-button" style="display:none;"><br>Jeu Snake</button>
+                <button class="building-button" id="buy-eolienne"><img src="éolienne.jpg"><br>Eolienne (100 points)</button>
+                <button class="building-button" id="dino-button" style="display:none;">Jeu du Dinosaure</button>
+                <button class="building-button" id="buy-barrage"><img src="barrage.webp"><br>Barrage (500 points)</button>
+                <button class="building-button" id="roulette-button" style="display:none;">Roulette</button>
+            </div>
+        </div>
+        <div id="weather-info">
+            <h2>Météo</h2>
+            <p id="Longitude"></p>
+            <p id="Latitude"></p>
+            <p id="Vitesse du vent"></p>
+            <p id="clouds"></p>
+            <p id="sunrise"></p> <!-- Lever du soleil -->
+            <p id="sunset"></p>  <!-- Coucher du soleil -->
+        </div>
+    </div>
+    </div>
+    <div id="snake-page" class="section">
+        <h1>Jeu Snake</h1>
+        <p id="snake-score">Score : 0</p>
+        <canvas id="background-canvas" width="0" height="0" style="position: absolute; top: 0; left: 0; z-index: 0;"></canvas>
+        <canvas id="snake-game" width="560" height="560" style="border: 1px solid #333; position: relative; z-index: 1;"></canvas>
+    </div>
+    <div id="game-over" class="section">
+        <h1>Game Over!</h1>
+        <p id="final-score">Score : 0</p>
+        <p id="high-score">Score Max : 0</p>
+        <button onclick="retryGame()">Rejouer</button>
+        <button onclick="returnToMain()">Retour au Clicker</button>
+    </div>
+    <div id="dino-page" class="section">
+        <h1>Jeu du Dinosaure</h1>
+        <canvas id="dino-canvas" width="800" height="300" style="border: 1px solid #333;"></canvas>
+        <p id="dino-score">Score : 0</p>
+    </div>
+    <div id="game-overdino" class="section">
+        <h2>Game Over</h2>
+        <p id="final-scoredino">Score : 0</p>
+        <p id="high-scoredino">Score Max : 0</p>
+        <button onclick="retryDino()">Rejouer</button>
+        <button onclick="returnToMain()">Retour au Clicker</button>
+    </div>
+    <div id="roulette-page" class="section">
+        <h1>Roulette</h1>
+        <p id="roulette-gain">Gain : 0</p>
+        <p id="roulette-perte">Perte : 0</p>
+        
+        <label for="inputValue1">Score parié :</label>
+        <input type="number" id="inputValue1" placeholder="Entrez un nombre" />
+        
+        <label for="inputValue2">Valeur entre 1 et 10 :</label>
+        <input type="number" id="inputValue2" placeholder="Entrez un nombre" /><br>
+        
+        <button onclick="validerValeur()">Valider</button><br>
+        
+        <!-- Conteneur principal avec la grille -->
+        <div class="roulette-container">
+            <!-- Image à gauche -->
+            <div class="roulette-image left">
+                <img src="casino.jpg" alt="Image gauche" />
+            </div>
+            
+            <!-- Colonne centrale avec le jeu de la roulette -->
+            <div class="roulette-column">
+                <canvas id="roulette-game" width="50" height="50" style="border: 1px solid #333;"></canvas><br>
+            </div>
+            
+            <!-- Image à droite -->
+            <div class="roulette-image right">
+                <img src="casino.jpg" alt="Image droite" />
+            </div>
+        </div>
+    
+        <button onclick="returnToMain()">Retour au Clicker</button>
+    </div>
+    
+    <div id="page2" class="section">
+        <h1>Options</h1>
+        <p>Ici, tu peux modifier les paramètres ou voir les statistiques.</p>
+        <!-- Ajoute d'autres contenus pour cette page -->
+    </div>
+    <script>
+
+        let score = 500;
+        let clicksPerSecond = 0;
+        let solaireCount = 0;
+        let eolienneCount = 0;
+        let barrageCount = 0;
+        
+        let solaireCost = 30;
+        let eolienneCost = 100;
+        let barrageCost = 500;
+
+        let windSpeed = 0;
+        let CouvertureNuageuse = 0;
+
+        
+
+        const button = document.getElementById("click-button");
+        const scoreDisplay = document.getElementById("score");
+        const pointsPerSecondDisplay = document.getElementById("points-per-second");
+        const buildingInfoDisplay = document.getElementById("building-info");
+        const solaireButton = document.getElementById("buy-solaire");
+        const eolienneButton = document.getElementById("buy-eolienne");
+        const barrageButton = document.getElementById("buy-barrage");
+        const snakeButton = document.getElementById("snake-button");
+        const dinoButton = document.getElementById("dino-button");
+        const rouletteButton = document.getElementById("roulette-button");
+        if (snakeButton) {
+            snakeButton.onclick = () => showSection('snake-page');
+        }
+
+        
+        if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(
+        (position) => {
+            const latitude = position.coords.latitude;
+            const longitude = position.coords.longitude;
+            console.log("Latitude:", latitude, "Longitude:", longitude);
+            fetchWeatherData(latitude, longitude); // Appel de la fonction pour récupérer les données météo
+        },
+        (error) => {
+            console.error("Erreur de géolocalisation :", error);
+        }
+    );
+} else {
+    console.error("La géolocalisation n'est pas supportée par ce navigateur.");
+}
+
+const apiKey = "a6e6b6571153c1fb241619c818011edc"; // Remplace par ta clé API OpenWeatherMap
+const units = "metric"; // Unités : metric pour Celsius, imperial pour Fahrenheit
+
+function fetchWeatherData(latitude, longitude) {
+    const url = `https://api.openweathermap.org/data/2.5/weather?lat=${latitude}&lon=${longitude}&appid=${apiKey}&units=${units}`;
+    
+    fetch(url)
+    .then(response => {
+        if (!response.ok) {
+            throw new Error("Erreur dans la requête API");
+        }
+        return response.json();
+    })
+    .then(data => {
+        windSpeed = data.wind.speed;
+        CouvertureNuageuse = data.clouds.all;
+        const sunriseTime = new Date(data.sys.sunrise * 1000).toLocaleTimeString();  // Lever du soleil
+        const sunsetTime = new Date(data.sys.sunset * 1000).toLocaleTimeString();    // Coucher du soleil
+        // Mettre à jour l'affichage météo dans le HTML
+        document.getElementById("Vitesse du vent").textContent = `Vitesse du vent : ${data.wind.speed} m/s`;
+        document.getElementById("clouds").textContent = `Couverture nuageuse : ${data.clouds.all}%`;
+        document.getElementById("Longitude").textContent = `Longitude : ${longitude}`;  // Correction de la variable affichée
+        document.getElementById("Latitude").textContent = `Latitude : ${latitude}`;    // Correction de la variable affichée
+        document.getElementById("sunrise").textContent = `Lever du soleil : ${sunriseTime}`;
+        document.getElementById("sunset").textContent = `Coucher du soleil : ${sunsetTime}`;
+    })
+    .catch(error => {
+    })
+    .catch(error => {
+        console.error("Erreur lors de la récupération des données météo :", error);
+    });
+}
+
+// Mettre à jour la météo toutes les heures
+setInterval(() => {
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+            (position) => {
+                const latitude = position.coords.latitude;
+                const longitude = position.coords.longitude;
+                fetchWeatherData(latitude, longitude);
+            },
+            (error) => {
+                console.error("Erreur de géolocalisation :", error);
+            }
+        );
+    }
+}, 3600000); // 1 heure en millisecondes
+
+        function showSection(sectionId) {
+            document.querySelectorAll('.section').forEach(section => {
+                section.classList.remove('active');
+            });
+            document.getElementById(sectionId).classList.add('active');
+
+            if (sectionId === 'snake-page') {
+        startSnakeGame();
+    } else if (sectionId === 'dino-page') {
+        startDinoGame();
+    }
+    
+        }
+
+        
+        function isDaytime() {
+            const now = Date.now();
+            return now >= sunrise && now <= sunset;
+        }
+
+
+        function updateDisplay() {
+            scoreDisplay.textContent = `Score : ${score.toFixed(1)}`;
+            pointsPerSecondDisplay.textContent = `Points par seconde : ${clicksPerSecond.toFixed(2)}`;
+            buildingInfoDisplay.textContent = `Dépollueurs : Panneau solaire : ${solaireCount} | Eolienne : ${eolienneCount} | Barrage : ${barrageCount}`;
+            solaireButton.innerHTML = `<img src="panneau solaire.png" alt="Panneau solaire"> <br>Panneau solaire (${solaireCost.toFixed(1)} points)`;
+            eolienneButton.innerHTML = `<img src="éolienne.jpg" alt="Eolienne"> <br>Eolienne (${eolienneCost.toFixed(1)} points)`;
+            barrageButton.innerHTML = `<img src="barrage.webp" alt="Barrage"> <br>Barrage (${barrageCost.toFixed(1)} points)`;
+            if (solaireCount > 0) {
+            snakeButton.style.display = 'block'; // Affiche le bouton Snake
+            } else {
+            snakeButton.style.display = 'none'; // Cache le bouton Snake
+            }
+
+            if (eolienneCount > 0) {
+            dinoButton.style.display = 'block'; // Affiche le bouton Dino
+            } else {
+            dinoButton.style.display = 'none'; // Cache le bouton Dino
+            }
+            if (barrageCount > 0) {
+            rouletteButton.style.display = 'block'; // Affiche le bouton Dino
+            } else {
+            rouletteButton.style.display = 'none'; // Cache le bouton Dino
+            }
+        }
+
+        button.addEventListener("click", () => {
+            score++;
+            updateDisplay();
+            button.classList.add("clicked");
+
+                // Retire la classe après 0.3 secondes pour rétrécir le bouton
+                setTimeout(() => {
+                    button.classList.remove("clicked");
+                }, 300); 
+        });
+        function calculateEolienneCPS(windSpeed) {
+    const maxWindSpeed = 25;
+    const meanWindSpeed = 2;
+    let cps = 1.2 * windSpeed/meanWindSpeed ;
+    // Si la vitesse du vent dépasse 25 m/s, le CPS est 0
+    if (windSpeed > maxWindSpeed) {
+        cps = 0;
+    }
+    return cps
+}
+function calculateSolaireCPS(CouvertureNuageuse) {
+    let cps = 0;
+    if (isDaytime()) {
+        cps = 0.3 / 40 * (100 - CouvertureNuageuse)*(1+highScore/100); // Calcul des CPS pendant la journée
+    }
+    return cps
+}
+        solaireButton.addEventListener("click", () => {
+            if (score >= solaireCost) {
+                score -= solaireCost;
+                solaireCount++;
+                solaireCost *= 1.03; 
+                updateDisplay();
+            } else {
+                alert("Pas assez de points pour acheter un Panneau solaire !");
+            }
+        });
+
+        eolienneButton.addEventListener("click", () => {
+            if (score >= eolienneCost) {
+                score -= eolienneCost;
+                eolienneCount++;
+                eolienneCost *= 1.03; 
+                updateDisplay();
+            } else {
+                alert("Pas assez de points pour acheter une Eolienne !");
+            }
+        });
+
+        barrageButton.addEventListener("click", () => {
+            if (score >= barrageCost) {
+                score -= barrageCost;
+                barrageCount++;
+                barrageCost *= 1.03; 
+                updateDisplay();
+            } else {
+                alert("Pas assez de points pour acheter un barrage !");
+            }
+        });
+
+        setInterval(() => {
+            clicksPerSecond=calculateSolaireCPS(CouvertureNuageuse)*solaireCount+calculateEolienneCPS(windSpeed)*eolienneCount+7*barrageCount;
+            score += clicksPerSecond;
+            updateDisplay();
+        }, 1000);
+        // Chargement et dessin de l'image de fond
+const backgroundCanvas = document.getElementById("background-canvas");
+const backgroundCtx = backgroundCanvas.getContext("2d");
+const snakeCanvas = document.getElementById("snake-game");
+const snakeCtx = snakeCanvas.getContext("2d");
+
+const box = 35;
+let snake = [{ x: 9 * box, y: 9 * box }];
+let direction;
+let food = { x: Math.floor(Math.random() * 16) * box, y: Math.floor(Math.random() * 16) * box };
+let scoreSnake = 0;
+let highScore = 0;
+let gameInterval;
+
+const backgroundImg = new Image();
+backgroundImg.src = "SnakePanneauSolaire.png"; // L'image de fond
+
+backgroundImg.onload = function () {
+    backgroundCtx.drawImage(backgroundImg, 0, 0, backgroundCanvas.width, backgroundCanvas.height);
+};
+
+document.addEventListener("keydown", (event) => {
+    if (event.key === "ArrowLeft" && direction !== "RIGHT") direction = "LEFT";
+    else if (event.key === "ArrowUp" && direction !== "DOWN") direction = "UP";
+    else if (event.key === "ArrowRight" && direction !== "LEFT") direction = "RIGHT";
+    else if (event.key === "ArrowDown" && direction !== "UP") direction = "DOWN";
+});
+
+function drawSnake() {
+    snake.forEach(segment => {
+        snakeCtx.fillStyle = "green";
+        snakeCtx.fillRect(segment.x, segment.y, box, box); // Dessiner chaque segment
+    });
+}
+
+function drawFood() {
+    snakeCtx.fillStyle = "red";
+    snakeCtx.fillRect(food.x, food.y, box, box); // Dessiner la nourriture
+}
+
+function gameLoop() {
+    snakeCtx.clearRect(0, 0, snakeCanvas.width, snakeCanvas.height); // Effacer le canvas de jeu
+    snakeCtx.drawImage(backgroundImg, 0, 0, snakeCanvas.width, snakeCanvas.height); // Redessiner le fond
+
+    drawSnake();
+    drawFood();
+
+    // Logique pour déplacer le serpent et gérer les collisions
+    updateGame();
+    document.getElementById("snake-score").textContent = "Score : " + scoreSnake;
+}
+
+function updateGame() {
+    const head = { x: snake[0].x, y: snake[0].y };
+
+    // Déplacer la tête en fonction de la direction
+    if (direction === "LEFT") head.x -= box;
+    if (direction === "UP") head.y -= box;
+    if (direction === "RIGHT") head.x += box;
+    if (direction === "DOWN") head.y += box;
+
+    // Vérifier si le serpent touche un mur
+    if (head.x < 0 || head.x >= snakeCanvas.width || head.y < 0 || head.y >= snakeCanvas.height) {
+        showGameOver(); // Afficher la page Game Over si collision avec le mur
+        return;
+    }
+
+    // Ajouter la nouvelle tête au serpent
+    snake.unshift(head);
+
+    // Vérifier si le serpent mange de la nourriture
+    if (head.x === food.x && head.y === food.y) {
+        scoreSnake++;
+        food = { x: Math.floor(Math.random() * 16) * box, y: Math.floor(Math.random() * 16) * box };
+    } else {
+        snake.pop(); // Retirer la queue si pas de nourriture mangée
+    }
+
+    // Logique de collision avec le serpent (même corps)
+    if (collision(head, snake.slice(1))) {
+        showGameOver(); // Afficher la page Game Over si collision avec le corps
+        return;
+    }
+
+    // Mettre à jour l'affichage du score
+    document.getElementById("score").textContent = "Score : " + scoreSnake;
+}
+
+
+
+function collision(head, array) {
+    return array.some(segment => segment.x === head.x && segment.y === head.y);
+}
+
+function startSnakeGame() {
+    scoreSnake = 0;
+    snake = [{ x: 9 * box, y: 9 * box }];
+    direction = null;
+
+    // Si un intervalle de jeu existait, on l'arrête avant d'en créer un nouveau
+    if (gameInterval) {
+        clearInterval(gameInterval);
+    }
+
+    gameInterval = setInterval(gameLoop, 1000 / 12); // Démarre le jeu avec un intervalle de 15 FPS
+}
+
+function showGameOver() {
+    clearInterval(gameInterval); // Arrêter l'intervalle de jeu
+    setTimeout(() => {
+        if (scoreSnake > highScore) highScore = scoreSnake;
+        document.getElementById("final-score").textContent = "Score : " + scoreSnake;
+        document.getElementById("high-score").textContent = "Score Max : " + highScore;
+        showSection("game-over");
+    }, 300);  // Délai de 500ms avant d'afficher Game Over
+}
+
+function retryGame() {
+    showSection("snake-page");
+    startSnakeGame();
+}
+
+function returnToMain() {
+    showSection("page1");
+    Gain = 0;
+    Perte = 0;
+    document.getElementById("roulette-perte").textContent = `Perte : ${Perte}`;
+    document.getElementById("roulette-score").textContent = `Score : ${score}`;
+}
+let dino, dinoScore, dinoInterval, dinoObstacles = [], gravity = 0.13, isJumping = false;
+let dinoX = 50, dinoY = 200, dinoVelocityY = 0;
+let highScoredino = 0;
+let obstacleTimeout;
+const obstacleImage = new Image();
+obstacleImage.src = 'éolienne.png';
+dinoButton.onclick = () => showSection('dino-page');
+
+// Fonction pour initialiser le jeu du dinosaure
+function startDinoGame() {
+    const dinoCanvas = document.getElementById("dino-canvas");
+    const dinoCtx = dinoCanvas.getContext("2d");
+
+    dinoObstacles = [];
+    dinoScore = 0;
+    isJumping = false;
+
+    if (dinoInterval) clearInterval(dinoInterval);
+    if (obstacleTimeout) clearTimeout(obstacleTimeout);
+
+    generateObstacle();  // Lancer la première génération d'obstacles
+
+    function jump() {
+        if (!isJumping) {
+            dinoVelocityY = -5;
+            isJumping = true;
+        }
+    }
+
+    document.addEventListener("keydown", (event) => {
+        if (event.key === " " || event.code === "ArrowUp") {
+            jump();
+        }
+    });
+
+    // Fonction de la boucle du jeu
+    function updateDinoGame() {
+        dinoVelocityY += gravity;
+        dinoY += dinoVelocityY;
+
+        if (dinoY > 270) {
+            dinoY = 270;
+            dinoVelocityY = 0;
+            isJumping = false;
+        }
+        
+
+        dinoCtx.clearRect(0, 0, dinoCanvas.width, dinoCanvas.height);
+        dinoCtx.fillStyle = "green";
+        dinoCtx.fillRect(dinoX, dinoY, 30, 30);
+
+        dinoScore++;
+        document.getElementById("dino-score").textContent = `Score : ${dinoScore}`;
+
+        updateObstacles(dinoCtx);
+    }
+
+    dinoInterval = setInterval(updateDinoGame, 10);
+}
+
+// Fonction pour générer des obstacles avec un intervalle variable
+function generateObstacle() {
+    const obstacleHeight = Math.floor(Math.random() * 40) + 30;
+    const obstacleWidth = 30;
+    const obstacleX = 800;
+    const obstacleY = 300;
+    const number=Math.ceil(Math.random()*3);
+    if (number===1){dinoObstacles.push({ x: obstacleX, y: obstacleY, width: obstacleWidth, height: obstacleHeight });}
+    else if (number===2){
+        dinoObstacles.push({ x: obstacleX, y: obstacleY, width: obstacleWidth, height: obstacleHeight });
+        dinoObstacles.push({ x: obstacleX-35, y: obstacleY, width: obstacleWidth, height: obstacleHeight });
+    }
+    else if (number===3){
+        dinoObstacles.push({ x: obstacleX, y: obstacleY, width: obstacleWidth, height: obstacleHeight });
+        dinoObstacles.push({ x: obstacleX-35, y: obstacleY, width: obstacleWidth, height: obstacleHeight });
+        dinoObstacles.push({ x: obstacleX-70, y: obstacleY, width: obstacleWidth, height: obstacleHeight });
+    }
+    // Définir l'intervalle dynamique pour le prochain obstacle
+    let minInterval = 1000 * (1 - Math.min(dinoScore / 6000, 0.8));
+    let maxInterval = 3000 * (1 - Math.min(dinoScore / 6000, 0.8));
+    let nextObstacleInterval = Math.random() * (maxInterval - minInterval) + minInterval;
+
+    // Planifier le prochain obstacle
+    obstacleTimeout = setTimeout(generateObstacle, nextObstacleInterval);
+}
+
+// Fonction pour mettre à jour les obstacles
+function updateObstacles(dinoCtx) {
+    dinoObstacles.forEach((obstacle, index) => {
+        obstacle.x -= 2.5 * (1 + dinoScore / 2000);
+        dinoCtx.drawImage(obstacleImage, obstacle.x, obstacle.y - obstacle.height, obstacle.width, obstacle.height);
+
+        if (detectCollision({ x: dinoX, y: dinoY, width: 30, height: 30 }, obstacle)) {
+            clearInterval(dinoInterval);
+            clearTimeout(obstacleTimeout);
+            showGameOverDino();
+            return;
+        }
+
+        if (obstacle.x + obstacle.width < 0) {
+            dinoObstacles.splice(index, 1);
+            dinoScore++;
+        }
+    });
+}
+
+// Fonction pour détecter la collision entre le dinosaure et un obstacle
+function detectCollision(dino, obstacle) {
+    return (
+        dino.x < obstacle.x + obstacle.width &&
+        dino.x + dino.width > obstacle.x &&
+        dino.y < obstacle.y &&
+        dino.y + dino.height > obstacle.y - obstacle.height
+    );
+}
+
+// Fonction pour afficher l'écran de Game Over
+function showGameOverDino() {
+    clearInterval(dinoInterval);
+    clearTimeout(obstacleTimeout);
+
+    if (dinoScore > highScoredino) {
+        highScoredino = dinoScore;
+    }
+
+    setTimeout(() => {
+        document.getElementById("final-scoredino").textContent = "Score : " + dinoScore;
+        document.getElementById("high-scoredino").textContent = "Score Max : " + highScoredino;
+        showSection("game-overdino");
+    }, 300);
+}
+
+// Fonction pour redémarrer le jeu
+function retryDino() {
+    showSection("dino-page");
+    startDinoGame();
+}
+rouletteButton.onclick = () => showSection('roulette-page');
+let Gain=0;
+let Perte=0;
+function startRouletteGame(valeur1, valeur2){
+    let T = Math.random() * 2000 + 2000;  // Durée aléatoire entre 2000 ms et 4000 ms
+    let défilé = 1;
+
+    const canvas = document.getElementById("roulette-game");
+    const ctx = canvas.getContext("2d");  // Récupère le contexte du canevas
+
+    const intervalId = setInterval(() => {
+        if (défilé < 10) {
+            défilé++;
+        } else {
+            défilé = 1;
+        }
+
+        // Effacer le canevas avant de dessiner la nouvelle valeur
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        // Dessiner la valeur du défilement au centre du canevas
+        ctx.font = "20px Arial";  // Définir la police du texte
+        ctx.fillStyle = "black";  // Définir la couleur du texte
+        ctx.textAlign = "center";  // Centrer le texte
+        ctx.textBaseline = "middle";  // Centrer verticalement
+        ctx.fillText(défilé, canvas.width / 2, canvas.height / 2);  // Afficher le texte au centre du canevas
+    }, 100);
+
+    setTimeout(() => {
+        clearInterval(intervalId);  // Arrête le défilement
+        // Vérifie si la valeur finale du défilement correspond à celle choisie
+        if (défilé === valeur2) {
+            score += valeur1 * 10;
+            Gain += valeur1 * 10;
+            document.getElementById("roulette-gain").textContent = `Gain : ${Gain}`;
+        } else {
+            score -= valeur1;
+            Perte+=valeur1;
+            document.getElementById("roulette-perte").textContent = `Perte : ${Perte}`;
+        }
+
+        // Affiche le score mis à jour
+        document.getElementById("roulette-score").textContent = `Score : ${score}`;
+    }, T);
+}
+function validerValeur() {
+    const valeur1 = parseInt(document.getElementById("inputValue1").value, 10);  // Convertit en nombre
+    const valeur2 = parseInt(document.getElementById("inputValue2").value, 10);  // Convertit en nombre
+    
+    // Vérifie que `valeur1` est une mise valide
+    if (valeur1 > 0 && valeur1 <= score) {
+        // Vérifie que `valeur2` est entre 1 et 10
+        if (valeur2 > 0 && valeur2 <= 10) {
+            startRouletteGame(valeur1, valeur2);  // Lance le jeu avec les valeurs validées
+        } else {
+            alert("Veuillez entrer une valeur entre 1 et 10 pour le choix de la roulette.");
+        }
+    } else {
+        alert("Veuillez entrer une mise valide inférieure ou égale à votre score.");
+    }
+}
+
+    </script>
+</body>
+</html>
